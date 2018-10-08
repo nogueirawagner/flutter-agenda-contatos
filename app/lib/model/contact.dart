@@ -39,6 +39,6 @@ class Contact {
 
   @override
   String toString() {
-    return "Contact(id: $id, nome: $nome, telefone: $telefone; email: $email; img: $img)";
+    return "Contact(id: $id, nome: $name, telefone: $phone; email: $email; img: $img)";
   }
 }
