@@ -12,6 +12,8 @@ class Contact {
   String phone;
   String img;
 
+  Contact();
+  
   // Pegou de um mapa e passou pro contato.
   Contact.fromMap(Map map) {
     id = map[idColumn];
