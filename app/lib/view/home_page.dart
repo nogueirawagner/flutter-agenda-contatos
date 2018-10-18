@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:app/helpers/contact_helper.dart';
 import 'package:app/model/contact.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:image_picker/image_picker.dart';
+
+enum OrderOptions { orderaz, orderza }
 
 class HomePage extends StatefulWidget {
   @override
@@ -27,9 +30,21 @@ class _HomePageState extends State<HomePage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-            title: Text("Contatos"),
-            backgroundColor: Colors.red,
-            centerTitle: true),
+          title: Text("Contatos"),
+          backgroundColor: Colors.red,
+          centerTitle: true,
+          actions: <Widget>[
+            PopupMenuButton<OrderOptions>(
+              itemBuilder: (context) => <PopupMenuEntry<OrderOptions>>[
+                    const PopupMenuItem<OrderOptions>(
+                        child: Text("A-Z"), value: OrderOptions.orderaz),
+                    const PopupMenuItem<OrderOptions>(
+                        child: Text("Z-A"), value: OrderOptions.orderza)
+                  ],
+              onSelected: _orderList,
+            )
+          ],
+        ),
         backgroundColor: Colors.white,
         floatingActionButton: FloatingActionButton(
           onPressed: () {
@@ -56,16 +71,26 @@ class _HomePageState extends State<HomePage> {
             padding: EdgeInsets.all(10.0),
             child: Row(
               children: <Widget>[
-                Container(
-                  width: 80.0,
-                  height: 80.0,
-                  decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      image: DecorationImage(
-                          image: contacts[index].img != null
-                              ? FileImage(File(contacts[index].img))
-                              : AssetImage("images/person.png"))),
-                ),
+                GestureDetector(
+                    child: Container(
+                      width: 80.0,
+                      height: 80.0,
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          image: DecorationImage(
+                              image: contacts[index].img != null
+                                  ? FileImage(File(contacts[index].img))
+                                  : AssetImage("images/person.png"))),
+                    ),
+                    onTap: () {
+                      ImagePicker.pickImage(source: ImageSource.camera)
+                          .then((file) {
+                        if (file == null) return;
+                        setState(() {
+                          contacts[index].img = file.path;
+                        });
+                      });
+                    }),
                 Expanded(
                   child: Padding(
                       padding: EdgeInsets.only(left: 15.0),
@@ -89,6 +114,23 @@ class _HomePageState extends State<HomePage> {
         _showOptions(context, index);
       },
     );
+  }
+
+  void _orderList(OrderOptions result) {
+    switch (result) {
+      case OrderOptions.orderaz:
+        contacts.sort((a, b) {
+          return a.name.toLowerCase().compareTo(b.name.toLowerCase());
+        });
+        break;
+
+      case OrderOptions.orderza:
+        contacts.sort((a, b) {
+          return b.name.toLowerCase().compareTo(a.name.toLowerCase());
+        });
+        break;
+    }
+    setState(() {});
   }
 
   void _showOptions(BuildContext context, int index) {
@@ -134,7 +176,8 @@ class _HomePageState extends State<HomePage> {
                               style:
                                   TextStyle(color: Colors.red, fontSize: 20.0)),
                           onPressed: () {
-                            helper.deleteContact(contacts[index].id); // removeu do banco
+                            helper.deleteContact(
+                                contacts[index].id); // removeu do banco
                             setState(() {
                               contacts.removeAt(index); // removeu da lista
                               Navigator.pop(context);
